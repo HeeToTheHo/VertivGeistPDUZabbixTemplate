@@ -1,0 +1,99 @@
+zabbix_export:
+  version: '6.2'
+  date: '2023-08-17T15:18:38Z'
+  template_groups:
+    -
+      uuid: 3dcd5bbe90534f9e8eb5c2d53756af63
+      name: Templates/Power
+  templates:
+    -
+      uuid: d48a3219fff9472ca4aefc079145c259
+      template: 'Vertiv Giest PDU'
+      name: 'Vertiv Giest PDU'
+      groups:
+        -
+          name: Templates/Power
+      items:
+        -
+          uuid: cd9dafd00fba4c86bb80f58755c01a01
+          name: 'Door Position'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.21239.5.2.11.1.6.2
+          key: pduDoor1Position
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 2f2568a314c247fe800750bf5b803567
+          name: 'Flood Sensor'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.21239.5.2.11.1.6.1
+          key: pduFloodSensor
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 776139e1788a410b88ec54b6588d6bcc
+          name: 'Remote Humidity Sensor'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.21239.5.2.9.1.6.1
+          key: pduHumiditySensor
+          units: '%'
+        -
+          uuid: 65245f0ec4fd471e8a23b45bbb3150c4
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.21239.5.2.3.1.1.2.1
+          key: pduSerialNumber
+          trends: '0'
+          value_type: TEXT
+        -
+          uuid: e631764e8e574f7b87a812ab15b66bf4
+          name: 'Remote Temperature Sensor'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.21239.5.2.9.1.5.1
+          key: pduTempSensorTemp
+          units: F
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '.1'
+      discovery_rules:
+        -
+          uuid: 7ca852b1137f4ec7b6feda2735b04959
+          name: Outlets
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#OUTLETLABEL},1.3.6.1.4.1.21239.5.2.3.6.1.3,{#OUTLETVOLTAGE},1.3.6.1.4.1.21239.5.2.3.6.1.4,{#OUTLETCURRENT},1.3.6.1.4.1.21239.5.2.3.6.1.8,{#OUTLETWATTS},1.3.6.1.4.1.21239.5.2.3.6.1.12]'
+          key: pduOutletDiscovery
+          item_prototypes:
+            -
+              uuid: 2ad2d08aaa584b82b951cdff5b66e901
+              name: 'Outlet {#OUTLETLABEL} Current'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21239.5.2.3.6.1.8.{#SNMPINDEX}'
+              key: 'pdu.[OutletCurrent.{#SNMPINDEX}]'
+              units: rms
+            -
+              uuid: bf1f72872ba84a29bcbd285ee7015c4e
+              name: 'Outlet {#OUTLETLABEL} Voltage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21239.5.2.3.6.1.4.{#SNMPINDEX}'
+              key: 'pdu.[OutletVoltage.{#SNMPINDEX}]'
+              units: rms
+            -
+              uuid: 0e4da3aba14e4c78980d43bd83115ee6
+              name: 'Outlet {#OUTLETLABEL} Wattage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21239.5.2.3.6.1.12.{#SNMPINDEX}'
+              key: 'pdu[OutletWattage.{#SNMPINDEX}]'
+              units: Watts
+          graph_prototypes:
+            -
+              uuid: eace1ec63a8e4ce3936791b442157dfc
+              name: 'Outlet {#OUTLETLABEL} Power Usage'
+              graph_items:
+                -
+                  color: 1A7C11
+                  calc_fnc: ALL
+                  item:
+                    host: 'Vertiv Giest PDU'
+                    key: 'pdu[OutletWattage.{#SNMPINDEX}]'
